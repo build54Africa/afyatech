@@ -1,3 +1,4 @@
+<!-- home.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,44 +14,74 @@
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
-      margin: 0;
-      padding: 0;
       background-color: #f4f4f9;
       color: #333;
     }
+
     /* Navbar styles */
     .navbar {
       background: #0078d7;
       color: #fff;
-      padding: 10px 20px;
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .logo {
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
+
     .nav-links {
       display: flex;
       list-style: none;
+      align-items: center;
+      transition: max-height 0.3s ease-in-out;
     }
+
     .nav-links li {
-      margin-left: 20px;
+      margin-left: 25px;
     }
+
     .nav-links a {
       color: #fff;
       text-decoration: none;
       font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
     }
-    .nav-links a:hover {
-      text-decoration: underline;
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
     }
+
+    /* Mobile menu toggle */
     .menu-toggle {
       display: none;
       cursor: pointer;
-      font-size: 24px;
+      font-size: 28px;
+      user-select: none;
+      transition: transform 0.2s ease;
     }
+    .menu-toggle.active {
+      transform: rotate(90deg);
+    }
+
     /* Hero section */
     .hero {
       text-align: center;
@@ -70,6 +101,7 @@
       margin-bottom: 30px;
       color: #555;
     }
+
     /* Buttons */
     .btn {
       display: inline-block;
@@ -93,6 +125,7 @@
     .btn:hover {
       opacity: 0.9;
     }
+
     /* Features section */
     .features {
       display: flex;
@@ -113,6 +146,7 @@
       color: #0078d7;
       margin-bottom: 10px;
     }
+
     /* Footer */
     .footer {
       text-align: center;
@@ -121,23 +155,31 @@
       color: #fff;
       margin-top: 20px;
     }
+
     /* Responsive navbar */
     @media (max-width: 768px) {
       .nav-links {
-        display: none;
-        flex-direction: column;
-        width: 100%;
         position: absolute;
-        top: 50px;
+        top: 60px;
         left: 0;
+        right: 0;
         background: #0078d7;
-        padding: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 0;
+        max-height: 0;
+        overflow: hidden;
       }
       .nav-links.active {
-        display: flex;
+        max-height: 400px; /* enough to show all links */
       }
       .nav-links li {
-        margin: 10px 0;
+        margin: 10px 20px;
+        width: 100%;
+      }
+      .nav-links a {
+        display: block;
+        width: 100%;
       }
       .menu-toggle {
         display: block;
@@ -148,24 +190,23 @@
 <body>
   <!-- Navbar -->
   <nav class="navbar">
-    <div class="logo">AfyaTech</div>
-    <div class="menu-toggle">☰</div>
-    <ul class="nav-links">
-     
-    <li><a href="/patients">patients</a></li>
+    <div class="nav-container">
+      <div class="logo">AfyaTech</div>
+      <div class="menu-toggle" aria-label="Toggle menu">☰</div>
+      <ul class="nav-links">
+        <li><a href="/patients">Patients</a></li>
         <li><a href="/form">Form</a></li>
-        <li><a href="/ai">Ai</a></li>
-      <!--<li><a href="/about">Anslysis</a></li>-->
-      <li><a href="/contact">Contact</a></li>
-    </ul>
+        <li><a href="/ai">AI</a></li>
+    
+      </ul>
+    </div>
   </nav>
 
   <!-- Hero Section -->
   <section class="hero">
     <h1>Welcome to AfyaTech</h1>
     <p>Your trusted partner in patient impact and healthcare management.</p>
-    <a href="/login" class="btn btn-login">Login</a>
-    <a href="/register" class="btn btn-register">Register</a>
+    
   </section>
 
   <!-- Features Section -->
@@ -190,9 +231,12 @@
   </footer>
 
   <script>
-    // Toggle mobile menu
-    document.querySelector('.menu-toggle').addEventListener('click', function() {
-      document.querySelector('.nav-links').classList.toggle('active');
+    const toggle = document.querySelector('.menu-toggle');
+    const links = document.querySelector('.nav-links');
+
+    toggle.addEventListener('click', () => {
+      links.classList.toggle('active');
+      toggle.classList.toggle('active');
     });
   </script>
 </body>

@@ -1,7 +1,8 @@
+// server.js
 import express from 'express';
 import bodyParser from 'body-parser';
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { OpenAI } from 'openai';
 
 dotenv.config();
@@ -9,17 +10,33 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
-const pool = new Pool({
-  user: process.env.USER,
-  host: process.env.HOST,
-  database: process.env.AFYA_TECH,
-  password: process.env.PASSWORD,
-  port: process.env.PORT_DB,
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => console.log('Connected to MongoDB ✅'));
+
+// Define Patient schema
+const patientSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  gender: String,
+  diagnosis: String,
+  treatment: String,
+  symptoms: [String],
+  allergies: [String],
+  medications: [String],
+  follow_up_date: Date,
+  impact_notes: String,
+});
+const Patient = mongoose.model('Patient', patientSchema);
 
 // Initialize OpenAI client
 const client = new OpenAI({
-  baseURL: "https://router.huggingface.co/v1",
+  baseURL: 'https://router.huggingface.co/v1',
   apiKey: process.env.HF_TOKEN,
 });
 
@@ -41,48 +58,59 @@ app.get('/', (req, res) => {
 // Get all patients
 app.get('/patients', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM patients');
-    res.render('patients', { patients: rows });
+    const patients = await Patient.find();
+    res.render('patients', { patients });
   } catch (err) {
     console.error(err);
-    res.send("Error fetching patients");
+    res.send('Error fetching patients');
   }
 });
 
 // Add a new patient
 app.post('/patients', async (req, res) => {
-  const { name, age, gender, diagnosis, treatment, symptoms, allergies, medications, follow_up_date, impact_notes } = req.body;
+  const {
+    name,
+    age,
+    gender,
+    diagnosis,
+    treatment,
+    symptoms,
+    allergies,
+    medications,
+    follow_up_date,
+    impact_notes,
+  } = req.body;
+
   try {
-    await pool.query(
-      `INSERT INTO patients(
-        name, age, gender, diagnosis, treatment,
-        symptoms, allergies, medications, follow_up_date, impact_notes
-      ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [
-        name, age, gender, diagnosis, treatment,
-        symptoms ? symptoms.split(',').map(s => s.trim()) : [],
-        allergies ? allergies.split(',').map(a => a.trim()) : [],
-        medications ? medications.split(',').map(m => m.trim()) : [],
-        follow_up_date || null,
-        impact_notes
-      ]
-    );
+    const newPatient = new Patient({
+      name,
+      age,
+      gender,
+      diagnosis,
+      treatment,
+      symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
+      allergies: allergies ? allergies.split(',').map((a) => a.trim()) : [],
+      medications: medications ? medications.split(',').map((m) => m.trim()) : [],
+      follow_up_date: follow_up_date || null,
+      impact_notes,
+    });
+
+    await newPatient.save();
     res.redirect('/patients');
   } catch (err) {
     console.error(err);
-    res.render('index', { error: "Error adding patient" });
+    res.render('index', { error: 'Error adding patient' });
   }
 });
 
-// New route: Generate patient summary and recommendations
 // Render the AI page
 app.get('/ai', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT id, name FROM patients');
-    res.render('ai', { patients: rows });
+    const patients = await Patient.find({}, '_id name');
+    res.render('ai', { patients });
   } catch (err) {
     console.error(err);
-    res.send("Error fetching patients");
+    res.send('Error fetching patients');
   }
 });
 
@@ -91,19 +119,25 @@ app.post('/api/patient/report', async (req, res) => {
   try {
     const { patientId, startDate, endDate } = req.body;
 
-    // Fetch patient records within the date range
-    const { rows } = await pool.query(
-      `SELECT * FROM patients
-       WHERE id = $1
-       AND (follow_up_date BETWEEN $2 AND $3 OR follow_up_date IS NULL)`,
-      [patientId, startDate, endDate]
-    );
+    // Build query
+    const query = {
+      _id: patientId,
+      $or: [
+        {
+          follow_up_date: {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
+          },
+        },
+        { follow_up_date: null },
+      ],
+    };
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "No records found for the selected date range" });
+    const patientRecords = await Patient.find(query);
+
+    if (patientRecords.length === 0) {
+      return res.status(404).json({ error: 'No records found for the selected date range' });
     }
-
-    const patientData = rows;
 
     // Prompt engineering for the LLM
     const prompt = `
@@ -113,7 +147,9 @@ app.post('/api/patient/report', async (req, res) => {
       3. Recommendations for treatment or further action.
 
       Patient Data:
-      ${patientData.map(record => `
+      ${patientRecords
+        .map(
+          (record) => `
         - Record Date: ${record.follow_up_date || 'N/A'}
         - Name: ${record.name}
         - Age: ${record.age}
@@ -123,15 +159,17 @@ app.post('/api/patient/report', async (req, res) => {
         - Allergies: ${Array.isArray(record.allergies) ? record.allergies.join(', ') : record.allergies}
         - Medications: ${Array.isArray(record.medications) ? record.medications.join(', ') : record.medications}
         - Impact Notes: ${record.impact_notes}
-      `).join('\n')}
+      `
+        )
+        .join('\n')}
     `;
 
     // Call the LLM
     const chatCompletion = await client.chat.completions.create({
-      model: "Qwen/Qwen3-Coder-480B-A35B-Instruct:together",
+      model: 'Qwen/Qwen3-Coder-480B-A35B-Instruct:together',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: prompt,
         },
       ],
@@ -140,11 +178,10 @@ app.post('/api/patient/report', async (req, res) => {
     const response = chatCompletion.choices[0].message.content;
     res.json({ report: response });
   } catch (error) {
-    console.error("Error generating report:", error);
-    res.status(500).json({ error: "Failed to generate report" });
+    console.error('Error generating report:', error);
+    res.status(500).json({ error: 'Failed to generate report' });
   }
 });
-
 
 // Start server
 app.listen(port, () => {
