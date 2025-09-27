@@ -27,8 +27,8 @@ app.get('/form', (req, res) => {
   res.render('index');
 });
 
-app.get('/form', (req, res) => {
-  res.render('index');
+app.get('/', (req, res) => {
+  res.render('home');
 });
 
 // Get all patients
