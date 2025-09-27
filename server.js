@@ -4,17 +4,17 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 
-dontenv.config();
+dotenv.config();
 const app = express();
 const port = 3000;
 
-const pool= {
+const pool = new Pool({
   user: process.env.USER,
   host: process.env.HOST,
-  database:process.env.AFYA_TECH,
+  database: process.env.AFYA_TECH,
   password: process.env.PASSWORD,
-  port: process.env.PORT,
-};
+  port: process.env.PORT_DB,
+});
 
 
 // Middleware

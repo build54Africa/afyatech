@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AfyaTech Health System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: #0078d7;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0;
+    }
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0078d7;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .success-message {
+      color: #28a745;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>AfyaTech Health System</h1>
+      <p>Add New Patient Record</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="form-container">
+      <form action="/patients" method="POST">
+        <div class="form-group">
+          <label for="name">Full Name:</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="age">Age:</label>
+          <input type="number" id="age" name="age" required>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender:</label>
+          <select id="gender" name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="diagnosis">Diagnosis:</label>
+          <textarea id="diagnosis" name="diagnosis" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="treatment">Treatment:</label>
+          <textarea id="treatment" name="treatment" rows="3" required></textarea>
+        </div>
+
+        <button type="submit">Submit Record</button>
+      </form>
+
+      <% if (typeof success !== 'undefined') { %>
+        <p class="success-message"><%= success %></p>
+      <% } %>
+
+      <% if (typeof error !== 'undefined') { %>
+        <p class="error-message"><%= error %></p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>
