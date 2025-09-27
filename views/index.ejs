@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AfyaTech Health System</title>
+  <title>AfyaTech - Add Patient Impact Record</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
@@ -13,27 +18,51 @@
       background-color: #f4f4f9;
       color: #333;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    header {
+    /* Navbar styles */
+    .navbar {
       background: #0078d7;
       color: #fff;
-      padding: 20px 0;
-      text-align: center;
-      border-radius: 5px;
-      margin-bottom: 20px;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    h1 {
-      margin: 0;
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
     }
-    .form-container {
+    .nav-links {
+      display: flex;
+      list-style: none;
+    }
+    .nav-links li {
+      margin-left: 20px;
+    }
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .menu-toggle {
+      display: none;
+      cursor: pointer;
+      font-size: 24px;
+    }
+    /* Container and form styles */
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
       background: #fff;
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #0078d7;
     }
     .form-group {
       margin-bottom: 15px;
@@ -58,74 +87,156 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      display: block;
+      margin: 20px auto;
     }
     button:hover {
       background: #005fa3;
     }
     .success-message {
       color: #28a745;
-      margin-top: 15px;
+      text-align: center;
       font-weight: bold;
+      margin-top: 15px;
     }
     .error-message {
       color: #dc3545;
-      margin-top: 15px;
+      text-align: center;
       font-weight: bold;
+      margin-top: 15px;
+    }
+    .tag-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .tag-input input {
+      flex: 1;
+      min-width: 150px;
+    }
+    .tag {
+      background: #e9ecef;
+      padding: 5px 10px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .tag button {
+      margin-left: 5px;
+      background: none;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      display: block;
+      padding: 0;
+    }
+    /* Responsive navbar */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        background: #0078d7;
+        padding: 10px;
+      }
+      .nav-links.active {
+        display: flex;
+      }
+      .nav-links li {
+        margin: 10px 0;
+      }
+      .menu-toggle {
+        display: block;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>AfyaTech Health System</h1>
-      <p>Add New Patient Record</p>
-    </div>
-  </header>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">AfyaTech</div>
+    <div class="menu-toggle">☰</div>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/patients">Patients</a></li>
+      <li><a href="/records">Records</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+  </nav>
 
   <div class="container">
-    <div class="form-container">
-      <form action="/patients" method="POST">
-        <div class="form-group">
-          <label for="name">Full Name:</label>
-          <input type="text" id="name" name="name" required>
-        </div>
-
-        <div class="form-group">
-          <label for="age">Age:</label>
-          <input type="number" id="age" name="age" required>
-        </div>
-
-        <div class="form-group">
-          <label for="gender">Gender:</label>
-          <select id="gender" name="gender" required>
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="diagnosis">Diagnosis:</label>
-          <textarea id="diagnosis" name="diagnosis" rows="3" required></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="treatment">Treatment:</label>
-          <textarea id="treatment" name="treatment" rows="3" required></textarea>
-        </div>
-
-        <button type="submit">Submit Record</button>
-      </form>
-
-      <% if (typeof success !== 'undefined') { %>
-        <p class="success-message"><%= success %></p>
-      <% } %>
-
-      <% if (typeof error !== 'undefined') { %>
-        <p class="error-message"><%= error %></p>
-      <% } %>
-    </div>
+    <h1>Add Patient Impact Record</h1>
+    <form action="/patients" method="POST">
+      <div class="form-group">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required>
+      </div>
+      <div class="form-group">
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="diagnosis">Diagnosis:</label>
+        <textarea id="diagnosis" name="diagnosis" rows="3" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="treatment">Treatment Plan:</label>
+        <textarea id="treatment" name="treatment" rows="3" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="symptoms">Symptoms (comma-separated):</label>
+        <input type="text" id="symptoms" name="symptoms" placeholder="e.g., fever, headache, fatigue">
+      </div>
+      <div class="form-group">
+        <label for="allergies">Allergies (comma-separated):</label>
+        <input type="text" id="allergies" name="allergies" placeholder="e.g., penicillin, peanuts">
+      </div>
+      <div class="form-group">
+        <label for="medications">Current Medications (comma-separated):</label>
+        <input type="text" id="medications" name="medications" placeholder="e.g., ibuprofen, insulin">
+      </div>
+      <div class="form-group">
+        <label for="follow_up_date">Follow-Up Date:</label>
+        <input type="date" id="follow_up_date" name="follow_up_date">
+      </div>
+      <div class="form-group">
+        <label for="impact_notes">Impact Notes (How can we improve this patient's outcome?):</label>
+        <textarea id="impact_notes" name="impact_notes" rows="4" placeholder="e.g., Needs dietary counseling, Schedule physical therapy, Monitor blood sugar levels"></textarea>
+      </div>
+      <button type="submit">Save Patient Record</button>
+    </form>
+    <% if (typeof success !== 'undefined') { %>
+      <p class="success-message"><%= success %></p>
+    <% } %>
+    <% if (typeof error !== 'undefined') { %>
+      <p class="error-message"><%= error %></p>
+    <% } %>
   </div>
+
+  <script>
+    // Toggle mobile menu
+    document.querySelector('.menu-toggle').addEventListener('click', function() {
+      document.querySelector('.nav-links').classList.toggle('active');
+    });
+    // Simple script to handle comma-separated tags (optional enhancement)
+    document.addEventListener('DOMContentLoaded', function() {
+      const symptomInput = document.getElementById('symptoms');
+      const allergyInput = document.getElementById('allergies');
+      const medicationInput = document.getElementById('medications');
+    });
+  </script>
 </body>
 </html>
