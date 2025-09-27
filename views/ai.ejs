@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AfyaTech - AI Report Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #0078d7;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select, input[type="date"], button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0078d7;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 20px auto;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    #reportResult {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #f9f9f9;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Report Generator</h1>
+    <form id="reportForm">
+      <div class="form-group">
+        <label for="patientId">Select Patient:</label>
+        <select id="patientId" name="patientId" required>
+          <option value="">Select a Patient</option>
+          <% patients.forEach(patient => { %>
+            <option value="<%= patient.id %>"><%= patient.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" required>
+      </div>
+      <div class="form-group">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate" required>
+      </div>
+      <button type="submit">Generate Report</button>
+    </form>
+    <div id="reportResult"></div>
+  </div>
+
+  <script>
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const patientId = document.getElementById('patientId').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/patient/report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ patientId, startDate, endDate }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          document.getElementById('reportResult').innerText = data.report;
+        } else {
+          document.getElementById('reportResult').innerText = `Error: ${data.error}`;
+        }
+      } catch (error) {
+        document.getElementById('reportResult').innerText = 'Failed to generate report.';
+      }
+    });
+  </script>
+</body>
+</html>
